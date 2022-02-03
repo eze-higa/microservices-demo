@@ -1,19 +1,32 @@
+using Microsoft.EntityFrameworkCore;
 using PlatformService.Models;
 
 namespace PlatformService.Data
 {
     public static class PreparationDb 
     {
-        public static void PrepareDb(WebApplication webApp)
+        public static void PrepareDb(WebApplication webApp, bool isDevelopmentEnvironment)
         {
             using(var scope = webApp.Services.CreateScope())
             {
-                SeedData(scope.ServiceProvider.GetService<AppDbContext>());
+                SeedData(scope.ServiceProvider.GetService<AppDbContext>(), isDevelopmentEnvironment);
             }
         }
 
-        private static void SeedData(AppDbContext dbContext)
+        private static void SeedData(AppDbContext dbContext, bool isDevelopmentEnvironment)
         {
+            if(!isDevelopmentEnvironment)
+            {
+                Console.WriteLine("Trying to apply migrations.");
+                try
+                {
+                    dbContext.Database.Migrate();
+                } catch(Exception e)
+                {
+                    Console.WriteLine($"Error applying migrations: {e.Message}");
+                }
+                
+            }
             if(!dbContext.Platforms.Any())
             {            
                 dbContext.Platforms.AddRange(
@@ -23,7 +36,7 @@ namespace PlatformService.Data
                 );
 
                 dbContext.SaveChanges();
-                Console.WriteLine("Seeding data");                
+                Console.WriteLine("Seeding data");
             }
         }
     }
