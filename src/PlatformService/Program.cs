@@ -6,11 +6,16 @@ using PlatformService.SyncDataServices.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(opt => 
-{    
-    opt.UseInMemoryDatabase("InMem");
-});
+// builder.Services.AddDbContext<AppDbContext>(opt => 
+// {    
+//     opt.UseInMemoryDatabase("InMem");
+// });
+
+builder.Services.AddDbContext<AppDbContext>( opt => 
+    {
+        opt.UseSqlServer(builder.Configuration.GetConnectionString("connection"));
+    }
+);
 
 builder.Services.AddScoped<IRepository<Platform>, Repository<Platform>>();
 
@@ -26,12 +31,13 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
+{    
+    // Add services to the container.    
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-PreparationDb.PrepareDb(app);
+PreparationDb.PrepareDb(app, app.Environment.IsDevelopment());
 
 app.UseHttpsRedirection();
 
