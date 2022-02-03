@@ -3,3 +3,5 @@ src/PlatformService/obj
 src/.vscode
 src/CommandsService/bin
 src/CommandsService/obj
+src/PlatformService/.vscode
+src/CommandsService/.vscode
