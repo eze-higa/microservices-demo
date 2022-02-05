@@ -10,6 +10,7 @@ namespace PlatformService.AutomapperProfiles
         {
             CreateMap<PlatformCreateDTO, Platform>();
             CreateMap<Platform, PlatformReadDTO>();
+            CreateMap<PlatformReadDTO, PlatformPublishedDTO>();
         }
     }
 }
