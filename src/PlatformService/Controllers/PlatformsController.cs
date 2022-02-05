@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data.Repositories;
 using PlatformService.DTOs;
 using PlatformService.Models;
@@ -14,14 +15,17 @@ namespace PlatformService.Controllers
         private readonly IRepository<Platform> _platformRepository;
         private readonly IMapper _mapper;
         private readonly ICommandDataClient _commandDataClient;
+        private readonly IMessageBusClient _messageBusClient;
 
         public PlatformsController(IRepository<Platform> platformRepository,
         IMapper mapper,
-        ICommandDataClient commandDataClient)
+        ICommandDataClient commandDataClient,
+        IMessageBusClient messageBusClient)
         {
             _platformRepository = platformRepository;
             _mapper = mapper;
             _commandDataClient = commandDataClient;
+            _messageBusClient = messageBusClient;
         }
 
         [HttpGet]
@@ -58,14 +62,26 @@ namespace PlatformService.Controllers
             }
             
             var responseDTO = _mapper.Map<PlatformReadDTO>(newPlatform);
-            
-            try{
+            //Sending sync message
+            try
+            {
                 await _commandDataClient.SendPlatformToCommand(responseDTO);
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 Console.WriteLine($"Error with the connection. {e.Message}");
             }
-
+            //sending async message
+            try
+            {
+                var busMessageRequest = _mapper.Map<PlatformReadDTO, PlatformPublishedDTO>(responseDTO);
+                busMessageRequest.Event = "Platform_Published";
+                _messageBusClient.PublishNewPlatform(busMessageRequest);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"--> error sending message to Message bus {ex.Message}");
+            }
             return CreatedAtRoute(nameof(GetPlatformById), new { id = newPlatform.Id }, responseDTO);            
         }
     }
