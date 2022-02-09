@@ -27,6 +27,11 @@ namespace CommandsService.Data
             await _dbContext.Platforms.AddAsync(platform);
         }
 
+        public bool ExternalPlatformExists(int externalPlatformId)
+        {
+            return _dbContext.Platforms.Any( p => p.ExternalID == externalPlatformId);
+        }
+
         public Command GetCommand(int platformId, int commandId)
         {
             return _dbContext
@@ -52,7 +57,12 @@ namespace CommandsService.Data
             return _dbContext.Platforms.Any(p => p.Id == platformId);
         }
 
-        public async Task<bool> SaveChanges()
+        public bool SaveChanges()
+        {
+            return _dbContext.SaveChanges() >= 0;
+        }
+
+        public async Task<bool> SaveChangesAsync()
         {
             var result = await _dbContext.SaveChangesAsync();
             return result >= 0;
