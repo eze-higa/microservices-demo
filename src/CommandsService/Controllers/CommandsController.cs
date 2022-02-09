@@ -55,7 +55,7 @@ namespace CommandsService.Controllers
             var command = _mapper.Map<CommandCreateDTO, Command>(commandCreateDTO);
             
             await _commandRepository.CreateCommand(platformId, command);
-            var succeed = await _commandRepository.SaveChanges();
+            var succeed = await _commandRepository.SaveChangesAsync();
 
             if(!succeed)
                 return BadRequest();
